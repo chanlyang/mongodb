@@ -1,6 +1,6 @@
 package com.leon.mongodb.repository;
 
-import com.leon.mongodb.model.User;
+import com.leon.mongodb.model.test.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

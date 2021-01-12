@@ -1,4 +1,4 @@
-package com.leon.mongodb.model;
+package com.leon.mongodb.model.test;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
