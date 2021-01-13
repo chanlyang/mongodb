@@ -1,7 +1,7 @@
 package com.leon.mongodb.service;
 
 import com.leon.mongodb.model.test.User;
-import com.mongodb.client.result.UpdateResult;
+import com.mongodb.WriteResult;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -56,12 +56,11 @@ public class MongoOperateService {
         query.with(Sort.sort(User.class).by(User::getAge).ascending());
 
         //分页
-        final Pageable pageableRequest =PageRequest.of(0, 2);
+        final Pageable pageableRequest = PageRequest.of(0, 2);
         query.with(pageableRequest);
 
 
-
-        users = mongoTemplate.find(query,User.class);
+        users = mongoTemplate.find(query, User.class);
         return user;
     }
 
@@ -74,11 +73,11 @@ public class MongoOperateService {
         Query query = new Query(Criteria.where("userId").is(user.getUserId()));
         Update update = new Update().set("name", user.getName()).set("age", user.getAge());
         //更新查询返回结果集的第一条
-        UpdateResult result = mongoTemplate.updateFirst(query, update, User.class);
+        WriteResult result = mongoTemplate.updateFirst(query, update, User.class);
         //更新查询返回结果集的所有
         // mongoTemplate.updateMulti(query,update,UserEntity.class);
         if (result != null) {
-            return result.getMatchedCount();
+            return result.getN();
         } else {
             return 0;
         }

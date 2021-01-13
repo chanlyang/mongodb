@@ -2,26 +2,8 @@ spring:
   data:
     mongodb:
       uri: mongodb://121.4.119.156:27017
-      database: test
 
 mongodb:
   database: test
-  username:
-  password:
-  address: 121.4.119.156:27017
-  authenticationDatabase:
-  # 连接池配置
-  clientName: ${spring.application.name} # 客户端的标识，用于定位请求来源等
-  connectionTimeoutMs: 10000     # TCP连接超时，毫秒
-  readTimeoutMs: 15000       # TCP读取超时，毫秒
-  poolMaxWaitTimeMs: 3000        #当连接池无可用连接时客户端阻塞等待的时长，单位毫秒
-  connectionMaxIdleTimeMs: 60000   #TCP连接闲置时间，单位毫秒
-  connectionMaxLifeTimeMs: 120000    #TCP连接最多可以使用多久，单位毫秒
-  heartbeatFrequencyMs: 20000      #心跳检测发送频率，单位毫秒
-  minHeartbeatFrequencyMs: 8000    #最小的心跳检测发送频率，单位毫秒
-  heartbeatConnectionTimeoutMs: 10000  #心跳检测TCP连接超时，单位毫秒
-  heartbeatReadTimeoutMs: 15000    #心跳检测TCP连接读取超时，单位毫秒
-  connectionsPerHost: 20       # 每个host的TCP连接数
-  minConnectionsPerHost: 5     #每个host的最小TCP连接数
-  #计算允许多少个线程阻塞等待可用TCP连接时的乘数，算法：threadsAllowedToBlockForConnectionMultiplier*connectionsPerHost，当前配置允许10*20个线程阻塞
-  threadsAllowedToBlockForConnectionMultiplier: 10
+  host: 121.4.119.156
+  port: 27017

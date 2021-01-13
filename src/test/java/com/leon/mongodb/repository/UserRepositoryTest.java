@@ -99,11 +99,11 @@ public class UserRepositoryTest {
         List<User> result1 = userRepository.insert(users);
 
         //查询全部并排序
-        List<User> sortUsers = userRepository.findAll(Sort.sort(User.class).by(User::getAge).descending());
+        List<User> sortUsers = userRepository.findAll(Sort.sort(User.class).by(User::getAge).ascending());
 
 
         //分页查询
-        Page<User> pageUsers = userRepository.findAll(PageRequest.of(1, 20, Sort.sort(User.class).descending()));
+        Page<User> pageUsers = userRepository.findAll(PageRequest.of(1, 20, Sort.sort(User.class).by(User::getAge).ascending()));
 
         pageUsers.iterator().forEachRemaining(it -> {
             System.out.println(it);

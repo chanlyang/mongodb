@@ -6,14 +6,18 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 import org.springframework.data.mongodb.core.convert.*;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,9 +28,37 @@ import java.util.List;
  */
 @Slf4j
 @Configuration
-@EnableConfigurationProperties(MongoClientOptionProperties.class)
+//@EnableConfigurationProperties(MongoClientOptionProperties.class)
 public class MongoDBConfig {
 
+    @Value("${mongodb.host}")
+    private String host;
+    @Value("${mongodb.port}")
+    private Integer port;
+    @Value("${mongodb.database}")
+    private String database;
+
+    /**
+     * 自定义mongo连接池
+     *
+     * @return
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public MongoDbFactory mongoDbFactory() throws UnknownHostException {
+
+        MongoClient mongoClient = new MongoClient(host, port);
+
+        return new SimpleMongoDbFactory(mongoClient, database);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public CustomConversions customConversions() {
+        List list = new ArrayList();
+        list.add(new TimestampConverter());
+        return new CustomConversions(list);
+    }
 
     @Bean
     public MappingMongoConverter mappingMongoConverter(MongoDbFactory factory, MongoMappingContext context, BeanFactory beanFactory, CustomConversions conversions) {
@@ -41,67 +73,13 @@ public class MongoDBConfig {
     }
 
     @Bean
-    public CustomConversions customConversions() {
-        List list = new ArrayList();
-        list.add(new TimestampConverter());
-        return new CustomConversions(list);
+    public MongoTemplate mongoTemplate(MongoDbFactory dbFactory, MappingMongoConverter converter) {
+        MongoTemplate mongoTemplate = new MongoTemplate(dbFactory, converter);
+        return mongoTemplate;
     }
 
-    /**
-     * 自定义mongo连接池
-     *
-     * @param properties
-     * @return
-     */
-    @Bean
-    public MongoDbFactory mongoDbFactory(MongoClientOptionProperties properties) {
-        //创建客户端参数
-        MongoClientOptions options = mongoClientOptions(properties);
 
-        //创建客户端和Factory
-        List<ServerAddress> serverAddresses = new ArrayList<>();
-        for (String address : properties.getAddress()) {
-            String[] hostAndPort = address.split(":");
-            String host = hostAndPort[0];
-            Integer port = Integer.parseInt(hostAndPort[1]);
-            ServerAddress serverAddress = new ServerAddress(host, port);
-            serverAddresses.add(serverAddress);
-        }
 
-        //创建认证客户端
-        MongoCredential mongoCredential = MongoCredential.createScramSha1Credential(properties.getUsername(),
-                properties.getAuthenticationDatabase() != null ? properties.getAuthenticationDatabase() : properties.getDatabase(),
-                properties.getPassword().toCharArray());
 
-        MongoClient mongoClient = new MongoClient(serverAddresses.get(0), mongoCredential, options);
-        //集群模式
-        if (serverAddresses.size() > 1) {
-            mongoClient = new MongoClient(serverAddresses, new ArrayList<>(Arrays.asList(mongoCredential)));
-        }
-        /** ps: 创建非认证客户端*/
-        //MongoClient mongoClient = new MongoClient(serverAddresses, mongoClientOptions);
-        return new SimpleMongoDbFactory(mongoClient, properties.getDatabase());
-    }
 
-    /**
-     * mongo客户端参数配置
-     *
-     * @return
-     */
-    public MongoClientOptions mongoClientOptions(MongoClientOptionProperties properties) {
-        return MongoClientOptions.builder()
-                .connectTimeout(properties.getConnectionTimeoutMs())
-                .socketTimeout(properties.getReadTimeoutMs()).applicationName(properties.getClientName())
-                .heartbeatConnectTimeout(properties.getHeartbeatConnectionTimeoutMs())
-                .heartbeatSocketTimeout(properties.getHeartbeatReadTimeoutMs())
-                .heartbeatFrequency(properties.getHeartbeatFrequencyMs())
-                .minHeartbeatFrequency(properties.getMinHeartbeatFrequencyMs())
-                .maxConnectionIdleTime(properties.getConnectionMaxIdleTimeMs())
-                .maxConnectionLifeTime(properties.getConnectionMaxLifeTimeMs())
-                .maxWaitTime(properties.getPoolMaxWaitTimeMs())
-                .connectionsPerHost(properties.getConnectionsPerHost())
-                .threadsAllowedToBlockForConnectionMultiplier(
-                        properties.getThreadsAllowedToBlockForConnectionMultiplier())
-                .minConnectionsPerHost(properties.getMinConnectionsPerHost()).build();
-    }
 }

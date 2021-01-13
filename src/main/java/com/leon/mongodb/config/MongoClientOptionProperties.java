@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 @Validated
-@ConfigurationProperties(prefix = "mongodb")
+//@ConfigurationProperties(prefix = "mongodb")
 public class MongoClientOptionProperties {
 
     /**
