@@ -2,6 +2,9 @@ package com.leon.mongodb.service;
 
 import com.leon.mongodb.model.test.User;
 import com.mongodb.client.result.UpdateResult;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -9,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author: chenliang
@@ -19,6 +23,7 @@ public class MongoOperateService {
 
     @Resource
     private MongoTemplate mongoTemplate;
+
 
     /**
      * 创建对象
@@ -36,8 +41,27 @@ public class MongoOperateService {
      * @return
      */
     public User findUserByUserName(String userName) {
+        //is 查询
         Query query = new Query(Criteria.where("name").is(userName));
         User user = mongoTemplate.findOne(query, User.class);
+
+        //正则查询
+        query.addCriteria(Criteria.where("name").regex("^A"));
+        List<User> users = mongoTemplate.find(query, User.class);
+
+        //大于小于查询
+        query.addCriteria(Criteria.where("age").lt(50).gt(20));
+
+        //排序
+        query.with(Sort.sort(User.class).by(User::getAge).ascending());
+
+        //分页
+        final Pageable pageableRequest =PageRequest.of(0, 2);
+        query.with(pageableRequest);
+
+
+
+        users = mongoTemplate.find(query,User.class);
         return user;
     }
 
